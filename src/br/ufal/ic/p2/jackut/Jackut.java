@@ -3,6 +3,9 @@ package br.ufal.ic.p2.jackut;
 import Config.AppConfig;
 import br.ufal.ic.p2.jackut.Data.AppData;
 import br.ufal.ic.p2.jackut.Data.BaseRepository;
+import br.ufal.ic.p2.jackut.Friendships.FriendShipRepository;
+import br.ufal.ic.p2.jackut.Friendships.Friendship;
+import br.ufal.ic.p2.jackut.Friendships.FriendshipStatus;
 import br.ufal.ic.p2.jackut.Sessions.Session;
 import br.ufal.ic.p2.jackut.Sessions.SessionRepository;
 import br.ufal.ic.p2.jackut.Users.User;
@@ -12,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.List;
 import java.util.Random;
 
 public class Jackut {
@@ -19,6 +23,7 @@ public class Jackut {
 
     UserRepository userRepo = new UserRepository(appData);
     SessionRepository sessionRepo = new SessionRepository(appData);
+    FriendShipRepository friendshipRepo = new FriendShipRepository(appData);
 
     private static AppData loadData() {
         try {
@@ -44,7 +49,7 @@ public class Jackut {
         }
     }
 
-    public String getAtributoUsuario(String login, String key) throws IOException {
+    public String getAtributoUsuario(String login, String key) throws Exception {
         User user = userRepo.getUserByLogin(login);
 
         if (user == null) {
@@ -59,7 +64,7 @@ public class Jackut {
             return user.login;
         }
 
-        return null;
+        return user.getAttribute(key);
     }
 
     public void criarUsuario(String name, String login, String password) {
@@ -78,13 +83,23 @@ public class Jackut {
         User user = new User(name, login, password);
 
         try {
-            userRepo.createUser(user);
+            userRepo.saveUser(user);
         } catch(Exception e) {
             System.out.println("Lalala");
         }
     }
 
-    public int abrirSessao(String login, String password) throws Exception {
+    public void editarPerfil(String id, String key, String value) throws Exception {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new Exception("Usuario nao cadastrado.");
+        }
+
+        sessionRepo.updateUser(session, key, value);
+    }
+
+    public String abrirSessao(String login, String password) throws Exception {
         if (login == null || login.isEmpty()) {
             throw new Exception("Login ou senha invalidos.");
         }
@@ -96,14 +111,91 @@ public class Jackut {
         }
 
         Random random = new Random();
-        int id = 0;
+        String id = null;
 
-        while (id == 0 || sessionRepo.getSessionById(id) != null) {
-            id = random.nextInt(Integer.MAX_VALUE);
+        while (id == null || sessionRepo.getSessionById(id) != null) {
+            int idValue = random.nextInt(Integer.MAX_VALUE);
+            id = Integer.toString(idValue);
         }
 
-        sessionRepo.createSession(new Session(id));
+        sessionRepo.saveSession(new Session(id, user));
         return id;
+    }
+
+    public void adicionarAmigo(String id, String login) throws Exception {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new Exception("Usuario nao cadastrado.");
+        }
+
+        User requestedUser = userRepo.getUserByLogin(login);
+
+        if (requestedUser == null) {
+            throw new Exception("Usuario nao cadastrado.");
+        }
+
+        User askingUser = session.getUser();
+
+        if (askingUser.equals(requestedUser)) {
+            throw new Exception("Usuario nao pode adicionar a si mesmo como amigo.");
+        }
+
+        Friendship friendship = friendshipRepo.getFriendshipByUsers(askingUser, requestedUser);
+
+        if (friendship == null) {
+            Friendship newFriendship = new Friendship(askingUser, requestedUser);
+            friendshipRepo.saveFriendship(newFriendship);
+            return;
+        }
+
+        switch (friendship.getStatus()) {
+            case PENDING:
+                if (friendship.getRequestedUser().equals(askingUser)) {
+                    friendship.setStatus(FriendshipStatus.ACCEPTED);
+                    friendshipRepo.saveFriendship(friendship);
+                } else {
+                    throw new Exception("Usuario ja esta adicionado como amigo, esperando aceitacao do convite.");
+                }
+                break;
+            case ACCEPTED:
+                throw new Exception("Usuario ja esta adicionado como amigo.");
+            default:
+                throw new Exception("Status de amizade desconhecido.");
+        }
+    }
+
+    public boolean ehAmigo(String login1, String login2) throws Exception {
+        User user1 = userRepo.getUserByLogin(login1);
+        User user2 = userRepo.getUserByLogin(login2);
+
+        if (user1 == null || user2 == null) {
+            throw new Exception("Um ou dois usuarios inexistentes");
+        }
+
+        Friendship friendship = friendshipRepo.getFriendshipByUsers(user1, user2);
+        return friendship != null && friendship.getStatus().equals(FriendshipStatus.ACCEPTED);
+    }
+
+    public String getAmigos(String login) throws Exception {
+        if (login == null || login.isEmpty()) {
+            throw new Exception("Login vazio");
+        }
+
+        User user = userRepo.getUserByLogin(login);
+
+        if (user == null) {
+            throw new Exception("Usuario nao cadastrado.");
+        }
+
+        List<User> friends = friendshipRepo.getFriendsByUser(user);
+        StringBuilder response = new StringBuilder();
+
+        for(User friend : friends) {
+            response.append(",").append(friend.getLogin());
+        }
+
+        return String.format("{%s}", !response.toString().isEmpty() ? response.substring(1) : "");
     }
 
     public void zerarSistema() {

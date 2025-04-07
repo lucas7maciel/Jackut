@@ -19,11 +19,7 @@ public class UserRepository extends BaseRepository {
         return appData.getUsers().get(login);
     }
 
-    public List<User> getAllUsers() {
-        return new ArrayList<>(appData.getUsers().values());
-    }
-
-    public void createUser(User user) {
+    public void saveUser(User user) {
         appData.getUsers().put(user.getLogin(), user);
     }
 }
