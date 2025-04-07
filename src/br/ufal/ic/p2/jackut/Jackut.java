@@ -6,6 +6,8 @@ import br.ufal.ic.p2.jackut.Data.BaseRepository;
 import br.ufal.ic.p2.jackut.Friendships.FriendShipRepository;
 import br.ufal.ic.p2.jackut.Friendships.Friendship;
 import br.ufal.ic.p2.jackut.Friendships.FriendshipStatus;
+import br.ufal.ic.p2.jackut.Messages.Message;
+import br.ufal.ic.p2.jackut.Messages.MessageRepository;
 import br.ufal.ic.p2.jackut.Sessions.Session;
 import br.ufal.ic.p2.jackut.Sessions.SessionRepository;
 import br.ufal.ic.p2.jackut.Users.User;
@@ -24,6 +26,7 @@ public class Jackut {
     UserRepository userRepo = new UserRepository(appData);
     SessionRepository sessionRepo = new SessionRepository(appData);
     FriendShipRepository friendshipRepo = new FriendShipRepository(appData);
+    MessageRepository messageRepo = new MessageRepository(appData);
 
     private static AppData loadData() {
         try {
@@ -41,7 +44,6 @@ public class Jackut {
             try (ObjectOutputStream oos = new ObjectOutputStream(
                     new FileOutputStream(file))) {
                 oos.writeObject(this.appData);
-                System.out.println("Dados salvos com sucesso em: " + file.getAbsolutePath());
             }
         } catch(Exception e) {
             System.err.println("Falha ao salvar dados:");
@@ -198,8 +200,49 @@ public class Jackut {
         return String.format("{%s}", !response.toString().isEmpty() ? response.substring(1) : "");
     }
 
+    public void enviarRecado(String id, String to, String content) throws Exception {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new Exception("Usuario nao cadastrado");
+        }
+
+        User from = session.getUser();
+
+        if (from.getLogin().equals(to)) {
+            throw new Exception("Usuario nao pode enviar recado para si mesmo.");
+        }
+
+        if (userRepo.getUserByLogin(to) == null) {
+            throw new Exception("Usuario nao cadastrado.");
+        }
+
+        Message message = new Message(from.getLogin(), to, content);
+        messageRepo.saveMessage(message);
+    }
+
+    public String lerRecado(String id) throws Exception {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new Exception("Usuario nao cadastrado");
+        }
+
+        User user = session.getUser();
+        Message message = messageRepo.popMessageByLogin(user.getLogin());
+        // System.out.println("Lendo: " + message.getContent());
+
+        if (message == null) {
+            throw new Exception("Nao ha recados.");
+        }
+
+        return message.getContent();
+    }
+
     public void zerarSistema() {
         appData.getUsers().clear();
         appData.getSessions().clear();
+        appData.getFriendShips().clear();
+        appData.getMessages().clear();
     }
 }

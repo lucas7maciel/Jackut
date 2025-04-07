@@ -39,6 +39,14 @@ public class Facade {
         return jackut.getAmigos(login);
     }
 
+    public void enviarRecado(String id, String to, String content) throws Exception {
+        jackut.enviarRecado(id, to, content);
+    }
+
+    public String lerRecado(String id) throws Exception {
+        return jackut.lerRecado(id);
+    }
+
     public void zerarSistema() {
         jackut.zerarSistema();
     }
