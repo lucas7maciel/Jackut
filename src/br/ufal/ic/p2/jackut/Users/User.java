@@ -1,6 +1,8 @@
 package br.ufal.ic.p2.jackut.Users;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     public
     String name, login, password;
 
@@ -10,5 +12,12 @@ public class User {
         this.password = password;
     }
 
+    public String getLogin() {
+        return this.login;
+    }
 
+    @Override
+    public String toString() {
+        return "User{name='" + this.name + "', login='" + this.login + "', password='" + this.password + "'}";
+    }
 }
