@@ -6,8 +6,11 @@ import br.ufal.ic.p2.jackut.Users.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FriendShipRepository extends BaseRepository {
+    private int lastId = 1;
+
     public FriendShipRepository(AppData appData) {
         super(appData);
     }
@@ -43,6 +46,8 @@ public class FriendShipRepository extends BaseRepository {
             User asking = friendship.getAskingUser();
             User requested = friendship.getRequestedUser();
 
+            if (friends.contains(asking) || friends.contains(requested)) continue;
+
             if (asking.equals(user)) {
                 friends.add(requested);
             } else if (requested.equals(user)) {
@@ -54,7 +59,7 @@ public class FriendShipRepository extends BaseRepository {
     }
 
     public void saveFriendship(Friendship friendship) {
-        String id = friendship.getAskingUser().getLogin() + friendship.getRequestedUser().getLogin();
+        String id = Integer.toString(lastId++);
         appData.getFriendShips().put(id, friendship);
     }
 }
