@@ -1,5 +1,5 @@
-# User Story 4 - Envio e leitura de recados entre usuï¿½rios
-# Permita a um usuï¿½rio cadastrado do Jackut enviar um recado a qualquer outro usuï¿½rio cadastrado.
+# User Story 4 - Envio e leitura de recados entre usuários
+# Permita a um usuário cadastrado do Jackut enviar um recado a qualquer outro usuário cadastrado.
 
 zerarSistema
 
@@ -54,7 +54,7 @@ expectError "Nao ha recados." lerRecado id=${id2}
 
 expectError "Usuario nao pode enviar recado para si mesmo." enviarRecado id=${id1} destinatario=jpsauve recado="Ola"
 
-# envio de recados para serem testados no arquivo de persistencia
+# envio de recados para serem testados no arquivo de persistência
 
 enviarRecado id=${id1} destinatario=oabath recado="Recado de Jacques para Osorio"
 enviarRecado id=${id2} destinatario=jpsauve recado="Recado de Osorio para Jacques"

@@ -1,21 +1,21 @@
-# User Story 1 - Cria??o de conta
-# Permita a um usu?rio criar uma conta no Jackut . Deve ser fornecido um login, uma senha e um nome com o qual o usu?rio ser? conhecido na rede.
+# User Story 1 - Criação de conta
+# Permita a um usuário criar uma conta no Jackut . Deve ser fornecido um login, uma senha e um nome com o qual o usuário será conhecido na rede.
 
 zerarSistema
 
-# Obs.: usar codifica??o de caracteres ISO 8859
+# Obs.: usar codificação de caracteres ISO 8859
 expectError "Usuario nao cadastrado." getAtributoUsuario login=jpsauve atributo=nome
 
 criarUsuario login=jpsauve senha=sauvejp nome="Jacques Sauve"
 
 expect "Jacques Sauve" getAtributoUsuario login=jpsauve atributo=nome
 
-# O comando abrirSessao retorna uma id que pode ser atribu?da a uma vari?vel do EasyAccept para refer?ncia posterior no script, como voc?
-# poder? ver, por exemplo, na user story 2. A gente inventou esse comando por quest?o de seguran?a, para simular um usu?rio entrando a
-# senha e iniciando um modo privado de uso do sistema. Nesse caso da us1_1, ele est? sendo usado meramente para testar a
-# senha (porque n?o podemos usar "expect getAtributoUsuario atributo=senha", justamente pelas quest?es de seguran?a). Se a senha
-# estiver correta, a sess?o ? aberta e o teste passa sem erros. Se a senha n?o estiver implementada corretamente (ou estiver errada), o
-# programa vai lan?ar uma exce??o e o EasyAccept vai acusar erro nessa linha.
+# O comando abrirSessao retorna uma id que pode ser atribuída a uma variável do EasyAccept para referência posterior no script, como você
+# poderá ver, por exemplo, na user story 2. A gente inventou esse comando por questão de segurança, para simular um usuário entrando a
+# senha e iniciando um modo privado de uso do sistema. Nesse caso da us1_1, ele está sendo usado meramente para testar a
+# senha (porque não podemos usar "expect getAtributoUsuario atributo=senha", justamente pelas questões de segurança). Se a senha
+# estiver correta, a sessão é aberta e o teste passa sem erros. Se a senha não estiver implementada corretamente (ou estiver errada), o
+# programa vai lançar uma exceção e o EasyAccept vai acusar erro nessa linha.
 abrirSessao login=jpsauve senha=sauvejp
 
 ###################
@@ -25,7 +25,7 @@ abrirSessao login=jpsauve senha=sauvejp
 
 expectError "Conta com esse nome ja existe." criarUsuario login=jpsauve senha=##$@!# nome="Jacques Sauve II"
 
-# entretanto, se o login for diferente, dois usu?rios podem ter o mesmo nome
+# entretanto, se o login for diferente, dois usuários podem ter o mesmo nome
 
 criarUsuario login=jpsauve2 senha=sauvejp nome="Jacques Sauve"
 
@@ -40,8 +40,8 @@ criarUsuario login=jpsauve3 senha=3sauvejp nome=""
 ###################
 # testes de todas as outras combinacoes importantes para o comando abrirSessao
 ###################
-# observe que ao dar erro, n?o queremos dizer se o erro foi login ou senha
-# Isso ? a forma padrao de tratar o assunto pois, desta forma, o hacker tem que advinhar ambos ao mesmo tempo
+# observe que ao dar erro, não queremos dizer se o erro foi login ou senha
+# Isso é a forma padrao de tratar o assunto pois, desta forma, o hacker tem que advinhar ambos ao mesmo tempo
 # em vez de quebrar login e senha separadamente
 
 expectError "Login ou senha invalidos." abrirSessao login=jpsauve senha=x

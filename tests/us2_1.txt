@@ -1,5 +1,5 @@
-# User Story 2 - Criaï¿½ï¿½o/Ediï¿½ï¿½o de perfil
-# Permita a um usuï¿½rio cadastrado do Jackut criar/editar atributos de seu perfil. Ele deve poder modificar qualquer atributo do perfil 
+# User Story 2 - Criação/Edição de perfil
+# Permita a um usuário cadastrado do Jackut criar/editar atributos de seu perfil. Ele deve poder modificar qualquer atributo do perfil 
 # ou preencher um atributo inexistente.
 
 zerarSistema
@@ -8,7 +8,7 @@ expectError "Usuario nao cadastrado." editarPerfil id=${id1} atributo=descricao 
 
 criarUsuario login=jpsauve senha=sauvejp nome="Jacques Sauve"
 
-# o usuï¿½rio nï¿½o ï¿½ obrigado a preencher qualquer dos atributos do perfil; novos atributos podem ser inventados
+# o usuário nao é obrigado a preencher qualquer dos atributos do perfil; novos atributos podem ser inventados
 
 expectError "Atributo nao preenchido." getAtributoUsuario login=jpsauve atributo=descricao
 expectError "Atributo nao preenchido." getAtributoUsuario login=jpsauve atributo=estadoCivil
@@ -46,4 +46,4 @@ expect "socialmente" getAtributoUsuario login=jpsauve atributo=bebo
 expect "com companheiro(a)" getAtributoUsuario login=jpsauve atributo=moro
 
 encerrarSistema
-## quit
+# quit
