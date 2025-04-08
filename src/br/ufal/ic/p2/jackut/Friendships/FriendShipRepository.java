@@ -17,7 +17,7 @@ public class FriendShipRepository extends BaseRepository {
 
     public Friendship getFriendshipByUsers(User user1, User user2) {
         if (user1 == null || user2 == null) {
-            throw new IllegalArgumentException("Usuário nao pode ser nulo");
+            throw new IllegalArgumentException("Usuario nao pode ser nulo");
         }
 
         for (Friendship friendship : appData.getFriendShips().values()) {
@@ -35,7 +35,7 @@ public class FriendShipRepository extends BaseRepository {
 
     public List<User> getFriendsByUser(User user) {
         if (user == null) {
-            throw new IllegalArgumentException("Usuário nao pode ser nulo");
+            throw new IllegalArgumentException("Usuario nao pode ser nulo");
         }
 
         List<User> friends = new ArrayList<>(appData.getFriendShips().size());

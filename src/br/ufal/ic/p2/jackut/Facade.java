@@ -11,22 +11,25 @@ public class Facade {
         jackut = new Jackut();
     }
 
+    // User Story 1
+    public void criarUsuario(String login, String password, String name) {
+        jackut.criarUsuario(name, login, password);
+    }
+
     public String getAtributoUsuario(String login, String key) throws Exception {
         return jackut.getAtributoUsuario(login, key);
-    }
-
-    public void criarUsuario(String login, String senha, String nome) {
-        jackut.criarUsuario(nome, login, senha);
-    }
-
-    public void editarPerfil(String id, String key, String value) throws Exception {
-        jackut.editarPerfil(id, key, value);
     }
 
     public String abrirSessao(String login, String senha) throws Exception {
         return jackut.abrirSessao(login, senha);
     }
 
+    // User Story 2
+    public void editarPerfil(String id, String key, String value) throws Exception {
+        jackut.editarPerfil(id, key, value);
+    }
+
+    // User Story 3
     public void adicionarAmigo(String id, String login) throws Exception {
         jackut.adicionarAmigo(id, login);
     }
@@ -39,6 +42,7 @@ public class Facade {
         return jackut.getAmigos(login);
     }
 
+    // User Story 4
     public void enviarRecado(String id, String to, String content) throws Exception {
         jackut.enviarRecado(id, to, content);
     }

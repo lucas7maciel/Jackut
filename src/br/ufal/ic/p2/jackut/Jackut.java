@@ -3,6 +3,7 @@ package br.ufal.ic.p2.jackut;
 import Config.AppConfig;
 import br.ufal.ic.p2.jackut.Data.AppData;
 import br.ufal.ic.p2.jackut.Data.BaseRepository;
+import br.ufal.ic.p2.jackut.Exceptions.*;
 import br.ufal.ic.p2.jackut.Friendships.FriendShipRepository;
 import br.ufal.ic.p2.jackut.Friendships.Friendship;
 import br.ufal.ic.p2.jackut.Friendships.FriendshipStatus;
@@ -46,29 +47,11 @@ public class Jackut {
                 oos.writeObject(this.appData);
             }
         } catch(Exception e) {
-            System.err.println("Falha ao salvar dados:");
-            throw new RuntimeException("Falha crítica ao salvar dados", e);
+            throw new RuntimeException("Falha ao salvar dados", e);
         }
     }
 
-    public String getAtributoUsuario(String login, String key) throws Exception {
-        User user = userRepo.getUserByLogin(login);
-
-        if (user == null) {
-            throw new IOException("Usuario nao cadastrado.");
-        }
-
-        if (key.equals("nome")) {
-            return user.name;
-        }
-
-        if (key.equals("login")) {
-            return user.login;
-        }
-
-        return user.getAttribute(key);
-    }
-
+    // User Story 1
     public void criarUsuario(String name, String login, String password) {
         if (login == null || login.isBlank()) {
             throw new IllegalArgumentException("Login invalido.");
@@ -79,7 +62,7 @@ public class Jackut {
         }
 
         if (appData.getUsers().containsKey(login)) {
-            throw new IllegalArgumentException("Conta com esse nome ja existe.");
+            throw new UserAlreadyExistsException("Conta com esse nome ja existe.");
         }
 
         User user = new User(name, login, password);
@@ -87,29 +70,37 @@ public class Jackut {
         try {
             userRepo.saveUser(user);
         } catch(Exception e) {
-            System.out.println("Lalala");
+            System.err.println(e);
         }
     }
 
-    public void editarPerfil(String id, String key, String value) throws Exception {
-        Session session = sessionRepo.getSessionById(id);
+    public String getAtributoUsuario(String login, String key) throws Exception {
+        User user = userRepo.getUserByLogin(login);
 
-        if (session == null) {
-            throw new Exception("Usuario nao cadastrado.");
+        if (user == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
         }
 
-        sessionRepo.updateUser(session, key, value);
+        if (key.equals("nome")) {
+            return user.getName();
+        }
+
+        if (key.equals("login")) {
+            return user.getLogin();
+        }
+
+        return user.getAttribute(key);
     }
 
     public String abrirSessao(String login, String password) throws Exception {
         if (login == null || login.isEmpty()) {
-            throw new Exception("Login ou senha invalidos.");
+            throw new InvalidLoginOrPasswordException("Login ou senha invalidos.");
         }
 
         User user = userRepo.getUserByLogin(login);
 
-        if (user == null || !user.password.equals(password)) {
-            throw new Exception("Login ou senha invalidos.");
+        if (user == null || !user.getPassword().equals(password)) {
+            throw new InvalidLoginOrPasswordException("Login ou senha invalidos.");
         }
 
         Random random = new Random();
@@ -124,23 +115,35 @@ public class Jackut {
         return id;
     }
 
+    // User Story 2
+    public void editarPerfil(String id, String key, String value) throws Exception {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        sessionRepo.updateUser(session, key, value);
+    }
+
+    // User Story 3
     public void adicionarAmigo(String id, String login) throws Exception {
         Session session = sessionRepo.getSessionById(id);
 
         if (session == null) {
-            throw new Exception("Usuario nao cadastrado.");
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
         }
 
         User requestedUser = userRepo.getUserByLogin(login);
 
         if (requestedUser == null) {
-            throw new Exception("Usuario nao cadastrado.");
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
         }
 
         User askingUser = session.getUser();
 
         if (askingUser.equals(requestedUser)) {
-            throw new Exception("Usuario nao pode adicionar a si mesmo como amigo.");
+            throw new SamePersonFriendshipException("Usuario nao pode adicionar a si mesmo como amigo.");
         }
 
         Friendship friendship = friendshipRepo.getFriendshipByUsers(askingUser, requestedUser);
@@ -157,11 +160,11 @@ public class Jackut {
                     friendship.setStatus(FriendshipStatus.ACCEPTED);
                     friendshipRepo.saveFriendship(friendship);
                 } else {
-                    throw new Exception("Usuario ja esta adicionado como amigo, esperando aceitacao do convite.");
+                    throw new FriendshipExistsException("Usuario ja esta adicionado como amigo, esperando aceitacao do convite.");
                 }
                 break;
             case ACCEPTED:
-                throw new Exception("Usuario ja esta adicionado como amigo.");
+                throw new FriendshipExistsException("Usuario ja esta adicionado como amigo.");
             default:
                 throw new Exception("Status de amizade desconhecido.");
         }
@@ -172,7 +175,7 @@ public class Jackut {
         User user2 = userRepo.getUserByLogin(login2);
 
         if (user1 == null || user2 == null) {
-            throw new Exception("Um ou dois usuarios inexistentes");
+            throw new UserNotRegisteredException("Um ou dois usuarios inexistentes");
         }
 
         Friendship friendship = friendshipRepo.getFriendshipByUsers(user1, user2);
@@ -181,13 +184,13 @@ public class Jackut {
 
     public String getAmigos(String login) throws Exception {
         if (login == null || login.isEmpty()) {
-            throw new Exception("Login vazio");
+            throw new IllegalArgumentException("Login vazio");
         }
 
         User user = userRepo.getUserByLogin(login);
 
         if (user == null) {
-            throw new Exception("Usuario nao cadastrado.");
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
         }
 
         List<User> friends = friendshipRepo.getFriendsByUser(user);
@@ -200,21 +203,22 @@ public class Jackut {
         return String.format("{%s}", !response.toString().isEmpty() ? response.substring(1) : "");
     }
 
+    // User Story 4
     public void enviarRecado(String id, String to, String content) throws Exception {
         Session session = sessionRepo.getSessionById(id);
 
         if (session == null) {
-            throw new Exception("Usuario nao cadastrado");
+            throw new UserNotRegisteredException("Usuario nao cadastrado");
         }
 
         User from = session.getUser();
 
         if (from.getLogin().equals(to)) {
-            throw new Exception("Usuario nao pode enviar recado para si mesmo.");
+            throw new SamePersonMessageException("Usuario nao pode enviar recado para si mesmo.");
         }
 
         if (userRepo.getUserByLogin(to) == null) {
-            throw new Exception("Usuario nao cadastrado.");
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
         }
 
         Message message = new Message(from.getLogin(), to, content);
@@ -225,15 +229,14 @@ public class Jackut {
         Session session = sessionRepo.getSessionById(id);
 
         if (session == null) {
-            throw new Exception("Usuario nao cadastrado");
+            throw new UserNotRegisteredException("Usuario nao cadastrado");
         }
 
         User user = session.getUser();
         Message message = messageRepo.popMessageByLogin(user.getLogin());
-        // System.out.println("Lendo: " + message.getContent());
 
         if (message == null) {
-            throw new Exception("Nao ha recados.");
+            throw new NoMessagesException("Nao ha recados.");
         }
 
         return message.getContent();

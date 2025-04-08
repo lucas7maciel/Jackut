@@ -4,9 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 public class User implements Serializable {
-    public
-    String name, login, password;
-    private HashMap<String, String> attributes = new HashMap<>();
+    private String name, login, password;
+    private final HashMap<String, String> attributes = new HashMap<>();
 
     public User(String name, String login, String password) {
         this.name = name;
@@ -14,9 +13,13 @@ public class User implements Serializable {
         this.password = password;
     }
 
+    public String getName() {return this.name;}
+
     public String getLogin() {
         return this.login;
     }
+
+    public String getPassword() {return this.password;}
 
     public String getAttribute(String key) throws Exception {
         if (!this.attributes.containsKey(key)) {
