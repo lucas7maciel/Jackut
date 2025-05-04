@@ -565,6 +565,17 @@ public class Jackut {
         relationshipRepo.save(relationship);
     }
 
+    // User Story 9
+    public void removerUsuario(String id) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        userRepo.deleteUser(session.getUser().getLogin());
+    }
+
     // Geral
     public void zerarSistema() {
         appData.getUsers().clear();

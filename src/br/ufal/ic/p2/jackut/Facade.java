@@ -121,6 +121,11 @@ public class Facade {
         jackut.adicionarInimigo(id, enemy);
     }
 
+    // User Story 9
+    public void removerUsuario(String id) throws Exception {
+        jackut.removerUsuario(id);
+    }
+
     // Geral
     public void zerarSistema() {
         jackut.zerarSistema();

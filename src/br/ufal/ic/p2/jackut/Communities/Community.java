@@ -26,4 +26,16 @@ public class Community implements Serializable {
     public void setMembers(List<User> members) {
         this.members = members;
     }
+
+    public void removeMember(String login) {
+        if (login == null || login.trim().isEmpty()) {
+            throw new IllegalArgumentException("Por favor, informe o login");
+        }
+
+        members.removeIf(user -> user.getLogin().equals(login));
+
+        if (this.creator.getLogin().equals(login)) {
+            this.creator = null;
+        }
+    }
 }
