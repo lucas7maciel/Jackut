@@ -1,6 +1,8 @@
 package br.ufal.ic.p2.jackut;
 
 import Config.AppConfig;
+import br.ufal.ic.p2.jackut.Communities.Community;
+import br.ufal.ic.p2.jackut.Communities.CommunityRepository;
 import br.ufal.ic.p2.jackut.Data.AppData;
 import br.ufal.ic.p2.jackut.Data.BaseRepository;
 import br.ufal.ic.p2.jackut.Exceptions.*;
@@ -28,6 +30,7 @@ public class Jackut {
     SessionRepository sessionRepo = new SessionRepository(appData);
     FriendShipRepository friendshipRepo = new FriendShipRepository(appData);
     MessageRepository messageRepo = new MessageRepository(appData);
+    CommunityRepository communityRepo = new CommunityRepository(appData);
 
     private static AppData loadData() {
         try {
@@ -47,7 +50,7 @@ public class Jackut {
                 oos.writeObject(this.appData);
             }
         } catch(Exception e) {
-            throw new RuntimeException("Falha ao salvar dados", e);
+            throw new RuntimeException("Falha ao salvar dados" + e);
         }
     }
 
@@ -242,10 +245,59 @@ public class Jackut {
         return message.getContent();
     }
 
+    // User Story 5
+    public void criarComunidade(String sessionId, String name, String description) {
+        Session session = sessionRepo.getSessionById(sessionId);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado");
+        }
+
+        if (communityRepo.getCommunityByName(name) != null) {
+            throw new SameNameCommunityException("Comunidade com esse nome ja existe.");
+        }
+
+        User user = session.getUser(); // Checar usuario nulo
+        Community community = new Community(name, description, user);
+        communityRepo.saveCommunity(community);
+    }
+
+    public String getDescricaoComunidade(String name) {
+        Community community = communityRepo.getCommunityByName(name);
+
+        if (community == null) {
+            throw new CommunityNotRegisteredException("Comunidade nao existe.");
+        }
+
+        return community.getDescription();
+    }
+
+    public String getDonoComunidade(String name) {
+        Community community = communityRepo.getCommunityByName(name);
+
+        if (community == null) {
+            throw new CommunityNotRegisteredException("Comunidade nao existe.");
+        }
+
+        return community.getCreator().getLogin();
+    }
+
+    public String getMembrosComunidade(String name) {
+        Community community = communityRepo.getCommunityByName(name);
+
+        if (community == null) {
+            throw new CommunityNotRegisteredException("Comunidade nao existe.");
+        }
+
+        return '{' + community.getCreator().getLogin() + '}';
+    }
+
+    // Geral
     public void zerarSistema() {
         appData.getUsers().clear();
         appData.getSessions().clear();
         appData.getFriendShips().clear();
         appData.getMessages().clear();
+        appData.getCommunities().clear();
     }
 }

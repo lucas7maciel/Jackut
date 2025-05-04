@@ -51,6 +51,24 @@ public class Facade {
         return jackut.lerRecado(id);
     }
 
+    // User Story 5
+    public void criarComunidade(String session, String name, String description) throws Exception {
+        jackut.criarComunidade(session, name, description);
+    }
+
+    public String getDescricaoComunidade(String name) throws Exception {
+        return jackut.getDescricaoComunidade(name);
+    }
+
+    public String getDonoComunidade(String name) throws Exception {
+        return jackut.getDonoComunidade(name);
+    }
+
+    public String getMembrosComunidade(String name) throws Exception {
+        return jackut.getMembrosComunidade(name);
+    }
+
+    // Geral
     public void zerarSistema() {
         jackut.zerarSistema();
     }
