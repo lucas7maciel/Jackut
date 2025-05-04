@@ -236,7 +236,7 @@ public class Jackut {
         }
 
         User user = session.getUser();
-        Message message = messageRepo.popMessageByLogin(user.getLogin());
+        Message message = messageRepo.popMessageByLogin(user.getLogin(), false);
 
         if (message == null) {
             throw new NoMessagesException("Nao ha recados.");
@@ -363,6 +363,39 @@ public class Jackut {
         community.setMembers(members);
 
         communityRepo.saveCommunity(community);
+    }
+
+    // User Story 7
+    public String lerMensagem(String id) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        Message message = messageRepo.popMessageByLogin(session.getUser().getLogin(), true);
+
+        if (message == null) {
+            throw new NoMessagesException("Nao ha mensagens.");
+        }
+
+        return message.getContent();
+    }
+
+    public void enviarMensagem(String id, String communityName, String message) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        Community community = communityRepo.getCommunityByName(communityName);
+
+        if (community == null) {
+            throw new CommunityNotRegisteredException("Comunidade nao existe.");
+        }
+
+        messageRepo.saveCommunityMessage(community, message);
     }
 
     // Geral

@@ -77,6 +77,18 @@ public class Facade {
         jackut.adicionarComunidade(id, name);
     }
 
+    // User Story 7
+    // * Nessa User Story foi implementada a troca de recados entre comunidades,
+    //   a classe Message foi reutilizada, porem é citada como 'Mensagens' no
+    //   caso de comunidades e 'Recados' no caso de interacoes entre usuarios
+    public String lerMensagem(String id) throws Exception {
+        return jackut.lerMensagem(id);
+    }
+
+    public void enviarMensagem(String id, String communityName, String message) throws Exception {
+        jackut.enviarMensagem(id, communityName, message);
+    }
+
     // Geral
     public void zerarSistema() {
         jackut.zerarSistema();
