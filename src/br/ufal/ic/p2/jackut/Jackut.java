@@ -246,8 +246,8 @@ public class Jackut {
     }
 
     // User Story 5
-    public void criarComunidade(String sessionId, String name, String description) {
-        Session session = sessionRepo.getSessionById(sessionId);
+    public void criarComunidade(String id, String name, String description) {
+        Session session = sessionRepo.getSessionById(id);
 
         if (session == null) {
             throw new UserNotRegisteredException("Usuario nao cadastrado");
@@ -289,7 +289,80 @@ public class Jackut {
             throw new CommunityNotRegisteredException("Comunidade nao existe.");
         }
 
-        return '{' + community.getCreator().getLogin() + '}';
+        List<User> members = community.getMembers();
+        StringBuilder response = new StringBuilder("{");
+
+        response.append(community.getCreator().getLogin());
+
+        if (!members.isEmpty()) {
+            response.append(",");
+        }
+
+        for(int i = 0; i < members.size(); i++) {
+            User member = members.get(i);
+            response.append(member.getLogin());
+
+            if (i < members.size() - 1) {
+                response.append(",");
+            }
+        }
+
+        response.append("}");
+        return response.toString();
+    }
+
+    // User Story 6
+    public String getComunidades(String login) {
+        if (login == null || login.isEmpty()) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        User user = userRepo.getUserByLogin(login);
+
+        if (user == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        List<Community> communities = communityRepo.getCommunitiesByUser(user);
+        StringBuilder response = new StringBuilder("{");
+
+        for (int i = 0; i < communities.size(); i++) {
+            Community community = communities.get(i);
+            response.append(community.getName());
+
+            if (i < communities.size() - 1) {
+                response.append(",");
+            }
+        }
+
+        response.append("}");
+        return response.toString();
+    }
+
+    public void adicionarComunidade(String id, String name) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        Community community = communityRepo.getCommunityByName(name);
+
+        if (community == null) {
+            throw new CommunityNotRegisteredException("Comunidade nao existe.");
+        }
+
+        User user = session.getUser();
+
+        if (community.getMembers().contains(user) || community.getCreator().equals(user)) {
+            throw new UserAlreadyInCommunity("Usuario ja faz parte dessa comunidade.");
+        }
+
+        List<User> members = community.getMembers();
+        members.add(session.getUser());
+        community.setMembers(members);
+
+        communityRepo.saveCommunity(community);
     }
 
     // Geral

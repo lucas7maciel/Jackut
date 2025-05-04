@@ -2,8 +2,9 @@ package br.ufal.ic.p2.jackut.Communities;
 
 import br.ufal.ic.p2.jackut.Data.AppData;
 import br.ufal.ic.p2.jackut.Data.BaseRepository;
-import br.ufal.ic.p2.jackut.Messages.Message;
 import br.ufal.ic.p2.jackut.Users.User;
+
+import java.util.List;
 
 public class CommunityRepository extends BaseRepository {
     public CommunityRepository(AppData appData) {
@@ -20,5 +21,17 @@ public class CommunityRepository extends BaseRepository {
         }
 
         return appData.getCommunities().get(name);
+    }
+
+    public List<Community> getCommunitiesByUser(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+
+        return appData.getCommunities().values().stream()
+                .filter(community ->
+                        community.getCreator().equals(user) ||
+                                community.getMembers().contains(user))
+                .toList();
     }
 }
