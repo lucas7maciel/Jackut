@@ -464,11 +464,11 @@ public class Jackut {
         List<Relationship> relationships = relationshipRepo.getRelationshipsByToAndType(user.getLogin(), RelationshipType.IDOL);
         StringBuilder response = new StringBuilder("{");
 
-        for (int i = relationships.size() - 1; i >= 0; i--) {
+        for (int i = 0; i != relationships.size(); i++) {
             Relationship relationship = relationships.get(i);
             response.append(relationship.getFrom());
 
-            if (i > 0) {
+            if (i != relationships.size() - 1) {
                 response.append(",");
             }
         }
@@ -532,11 +532,11 @@ public class Jackut {
 
         StringBuilder response = new StringBuilder("{");
 
-        for (int i = 0; i < relationships.size(); i++) {
+        for (int i = relationships.size() - 1; i >= 0; i--) {
             Relationship relationship = relationships.get(i);
             response.append(relationship.getTo());
 
-            if (i < relationships.size() - 1) {
+            if (i > 0) {
                 response.append(",");
             }
         }

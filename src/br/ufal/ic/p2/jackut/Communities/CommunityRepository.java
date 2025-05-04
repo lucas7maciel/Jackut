@@ -4,6 +4,7 @@ import br.ufal.ic.p2.jackut.Data.AppData;
 import br.ufal.ic.p2.jackut.Data.BaseRepository;
 import br.ufal.ic.p2.jackut.Users.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommunityRepository extends BaseRepository {
@@ -28,10 +29,21 @@ public class CommunityRepository extends BaseRepository {
             throw new IllegalArgumentException("User cannot be null");
         }
 
-        return appData.getCommunities().values().stream()
-                .filter(community ->
-                        community.getCreator().equals(user) ||
-                                community.getMembers().contains(user))
-                .toList();
+        List<Community> ownedCommunities = appData.getCommunities().values().stream().filter(c ->
+                c.getCreator().equals(user)).toList();
+        List<Community> joinedCommunities = appData.getCommunities().values().stream().filter(c ->
+                c.getMembers().contains(user)).toList();
+
+        List<Community> allCommunities = new ArrayList<>();
+
+        for (int i = 0; i < ownedCommunities.size(); i++) {
+            allCommunities.add(ownedCommunities.get(i));
+        }
+
+        for (int i = 0; i < joinedCommunities.size(); i++) {
+            allCommunities.add(joinedCommunities.get(i));
+        }
+
+        return allCommunities;
     }
 }
