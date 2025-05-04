@@ -11,6 +11,9 @@ import br.ufal.ic.p2.jackut.Friendships.Friendship;
 import br.ufal.ic.p2.jackut.Friendships.FriendshipStatus;
 import br.ufal.ic.p2.jackut.Messages.Message;
 import br.ufal.ic.p2.jackut.Messages.MessageRepository;
+import br.ufal.ic.p2.jackut.Relationships.Relationship;
+import br.ufal.ic.p2.jackut.Relationships.RelationshipRepository;
+import br.ufal.ic.p2.jackut.Relationships.RelationshipType;
 import br.ufal.ic.p2.jackut.Sessions.Session;
 import br.ufal.ic.p2.jackut.Sessions.SessionRepository;
 import br.ufal.ic.p2.jackut.Users.User;
@@ -31,6 +34,7 @@ public class Jackut {
     FriendShipRepository friendshipRepo = new FriendShipRepository(appData);
     MessageRepository messageRepo = new MessageRepository(appData);
     CommunityRepository communityRepo = new CommunityRepository(appData);
+    RelationshipRepository relationshipRepo = new RelationshipRepository(appData);
 
     private static AppData loadData() {
         try {
@@ -149,6 +153,10 @@ public class Jackut {
             throw new SamePersonFriendshipException("Usuario nao pode adicionar a si mesmo como amigo.");
         }
 
+        if (relationshipRepo.isEnemy(requestedUser.getLogin(), askingUser.getLogin())) {
+            throw new InvalidFunctionException(String.format("Funcao invalida: %s e seu inimigo.", requestedUser.getName()));
+        }
+
         Friendship friendship = friendshipRepo.getFriendshipByUsers(askingUser, requestedUser);
 
         if (friendship == null) {
@@ -179,6 +187,10 @@ public class Jackut {
 
         if (user1 == null || user2 == null) {
             throw new UserNotRegisteredException("Um ou dois usuarios inexistentes");
+        }
+
+        if (relationshipRepo.isEnemy(user2.getLogin(), user1.getLogin())) {
+            return false;
         }
 
         Friendship friendship = friendshipRepo.getFriendshipByUsers(user1, user2);
@@ -222,6 +234,11 @@ public class Jackut {
 
         if (userRepo.getUserByLogin(to) == null) {
             throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        if (relationshipRepo.isEnemy(to, from.getLogin())) {
+            User toUser = userRepo.getUserByLogin(to);
+            throw new InvalidFunctionException(String.format("Funcao invalida: %s e seu inimigo.", toUser.getName()));
         }
 
         Message message = new Message(from.getLogin(), to, content);
@@ -398,6 +415,156 @@ public class Jackut {
         messageRepo.saveCommunityMessage(community, message);
     }
 
+    // User Story 8
+    // * Idolos
+    public void adicionarIdolo(String id, String idol) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null || userRepo.getUserByLogin(idol) == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        User user = session.getUser();
+
+        if (user.getLogin().equals(idol)) {
+            throw new InvalidRelationshipException("Usuario nao pode ser fa de si mesmo.");
+        }
+
+        if (relationshipRepo.isEnemy(idol, user.getLogin())) {
+            User idolUser = userRepo.getUserByLogin(idol);
+            throw new InvalidFunctionException(String.format("Funcao invalida: %s e seu inimigo.", idolUser.getName()));
+        }
+
+        Relationship relationship = new Relationship(user.getLogin(), idol, RelationshipType.IDOL);
+
+        if (relationshipRepo.getRelationship(relationship) != null) {
+            throw new RelationshipNotRegisteredException("Usuario ja esta adicionado como idolo.");
+        }
+
+        relationshipRepo.save(relationship);
+    }
+
+    public boolean ehFa(String login, String idol) {
+        Relationship relationship = new Relationship(login, idol, RelationshipType.IDOL);
+
+        if (relationshipRepo.isEnemy(idol, login)) {
+            return false;
+        }
+
+        return relationshipRepo.getRelationship(relationship) != null;
+    }
+
+    public String getFas(String login) {
+        User user = userRepo.getUserByLogin(login);
+
+        if (user == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        List<Relationship> relationships = relationshipRepo.getRelationshipsByToAndType(user.getLogin(), RelationshipType.IDOL);
+        StringBuilder response = new StringBuilder("{");
+
+        for (int i = relationships.size() - 1; i >= 0; i--) {
+            Relationship relationship = relationships.get(i);
+            response.append(relationship.getFrom());
+
+            if (i > 0) {
+                response.append(",");
+            }
+        }
+
+        return response.append("}").toString();
+    }
+
+    // * Paqueras
+    public void adicionarPaquera(String id, String flirt) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null || userRepo.getUserByLogin(flirt) == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        User user = session.getUser();
+
+        if (user.getLogin().equals(flirt)) {
+            throw new InvalidRelationshipException("Usuario nao pode ser paquera de si mesmo.");
+        }
+
+        if (relationshipRepo.isEnemy(flirt, user.getLogin())) {
+            User flirtUser = userRepo.getUserByLogin(flirt);
+            throw new InvalidFunctionException(String.format("Funcao invalida: %s e seu inimigo.", flirtUser.getName()));
+        }
+
+        Relationship relationship = new Relationship(user.getLogin(), flirt, RelationshipType.FLIRT);
+
+        if (relationshipRepo.getRelationship(relationship) != null) {
+            throw new RelationshipNotRegisteredException("Usuario ja esta adicionado como paquera.");
+        }
+
+        relationshipRepo.save(relationship);
+    }
+
+    public boolean ehPaquera(String id, String flirt) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        if (relationshipRepo.isEnemy(flirt, session.getUser().getLogin())) {
+            return false;
+        }
+
+        Relationship relationship = new Relationship(session.getUser().getLogin(), flirt, RelationshipType.FLIRT);
+
+        return relationshipRepo.getRelationship(relationship) != null;
+    }
+
+    public String getPaqueras(String id) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        Relationship searchRelationship = new Relationship(session.getUser().getLogin(), null, RelationshipType.FLIRT);
+        List<Relationship> relationships = relationshipRepo.filterRelationship(searchRelationship);
+
+        StringBuilder response = new StringBuilder("{");
+
+        for (int i = 0; i < relationships.size(); i++) {
+            Relationship relationship = relationships.get(i);
+            response.append(relationship.getTo());
+
+            if (i < relationships.size() - 1) {
+                response.append(",");
+            }
+        }
+
+        return response.append("}").toString();
+    }
+
+    // * Inimigos
+    public void adicionarInimigo(String id, String enemy) {
+        Session session = sessionRepo.getSessionById(id);
+
+        if (session == null || userRepo.getUserByLogin(enemy) == null) {
+            throw new UserNotRegisteredException("Usuario nao cadastrado.");
+        }
+
+        if (session.getUser().getLogin().equals(enemy)) {
+            throw new InvalidRelationshipException("Usuario nao pode ser inimigo de si mesmo.");
+        }
+
+        Relationship relationship = new Relationship(session.getUser().getLogin(), enemy, RelationshipType.ENEMY);
+
+        if (relationshipRepo.getRelationship(relationship) != null) {
+            throw new RelationshipAlreadyExistsException("Usuario ja esta adicionado como inimigo.");
+        }
+
+        relationshipRepo.save(relationship);
+    }
+
     // Geral
     public void zerarSistema() {
         appData.getUsers().clear();
@@ -405,5 +572,6 @@ public class Jackut {
         appData.getFriendShips().clear();
         appData.getMessages().clear();
         appData.getCommunities().clear();
+        appData.getRelationships().clear();
     }
 }

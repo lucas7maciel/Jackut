@@ -89,6 +89,38 @@ public class Facade {
         jackut.enviarMensagem(id, communityName, message);
     }
 
+    // User Story 8
+    // * Idolos
+    public void adicionarIdolo(String id, String idol) {
+        jackut.adicionarIdolo(id, idol);
+    }
+
+    public boolean ehFa(String login, String idol) throws Exception {
+        return jackut.ehFa(login, idol);
+    }
+
+    public String getFas(String idol) throws Exception {
+        return jackut.getFas(idol);
+    }
+
+    // * Paqueras
+    public void adicionarPaquera(String id, String flirt) {
+        jackut.adicionarPaquera(id, flirt);
+    }
+
+    public boolean ehPaquera(String id, String flirt) throws Exception {
+        return jackut.ehPaquera(id, flirt);
+    }
+
+    public String getPaqueras(String id) throws Exception {
+        return jackut.getPaqueras(id);
+    }
+
+    // * Inimigos
+    public void adicionarInimigo(String id, String enemy) {
+        jackut.adicionarInimigo(id, enemy);
+    }
+
     // Geral
     public void zerarSistema() {
         jackut.zerarSistema();
